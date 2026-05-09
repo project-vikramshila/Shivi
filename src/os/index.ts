@@ -1,0 +1,12 @@
+export { OSCore } from './core/runtime';
+export { PluginManager } from './plugins/pluginManager';
+export type { PluginDefinition, PluginImplementation, PluginCapability } from './plugins/pluginManager';
+export { EventBus } from './events/eventBus';
+export type { OSBusEventName, OSBusEventPayload } from './events/eventBus';
+export { WorkflowEngine } from './workflows/workflowEngine';
+export type { WorkflowDefinition, WorkflowStep, WorkflowTrigger } from './workflows/workflowEngine';
+export { SkillManager } from './skills/skillManager';
+export type { SkillDefinition } from './skills/skillManager';
+export { ServiceManager } from './services/serviceManager';
+export type { BackgroundService, ServiceStatus } from './services/serviceManager';
+export { LocalApiServer } from './apis/localApi';

@@ -1,0 +1,32 @@
+appId: com.shivi.ai
+productName: Shivi AI
+copyright: "© 2026 Namaste Codes"
+directories:
+  output: dist_electron
+  buildResources: build
+files:
+  - dist/**/*
+  - package.json
+  - build/icons/*
+win:
+  target:
+    - nsis
+    - portable
+  publisherName: "Namaste Codes"
+  artifactName: "Shivi-Setup-${version}.${ext}"
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  runAfterFinish: true
+publish:
+  provider: github
+  owner: project-vikramshila
+  repo: Shivi
+  releaseType: draft
+  token: ${GITHUB_TOKEN}
+extraMetadata:
+  version: 0.1.0

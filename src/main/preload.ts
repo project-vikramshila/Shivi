@@ -1,5 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { IPC_CHANNELS } from '../lib/ipc/channels';
+import * as path from 'path';
+
+const ipcChannelsPath = path.join(__dirname, '../lib/ipc/channels');
+const { IPC_CHANNELS } = require(ipcChannelsPath);
 
 // Safe invoke wrapper
 const safeInvoke = async (channel: string, ...args: any[]) => {

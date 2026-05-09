@@ -1,4 +1,4 @@
-import { exec, spawn } from 'child_process';
+import { execFile, exec, spawn } from 'child_process';
 import { platform } from 'os';
 import * as path from 'path';
 
@@ -83,52 +83,54 @@ export class WindowManager {
 
   private async updateWindowsWindows() {
     // Use PowerShell to get window information
-    const script = `
-      Add-Type @"
-        using System;
-        using System.Runtime.InteropServices;
-        public class Win32 {
-          [DllImport("user32.dll")]
-          public static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);
-          [DllImport("user32.dll")]
-          public static extern int GetWindowText(IntPtr hWnd, string lpString, int nMaxCount);
-          [DllImport("user32.dll")]
-          public static extern bool IsWindowVisible(IntPtr hWnd);
-          [DllImport("user32.dll")]
-          public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
-          [StructLayout(LayoutKind.Sequential)]
-          public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }
-        }
-"@
-
-      $windows = @()
-      $callback = {
-        param($hwnd, $lparam)
-        if ([Win32]::IsWindowVisible($hwnd)) {
-          $title = " " * 256
-          [Win32]::GetWindowText($hwnd, [ref]$title, 256)
-          $title = $title.Trim()
-          if ($title) {
-            $rect = New-Object Win32+RECT
-            [Win32]::GetWindowRect($hwnd, [ref]$rect)
-            $windows += @{
-              id = $hwnd.ToString()
-              title = $title
-              bounds = @{
-                x = $rect.Left
-                y = $rect.Top
-                width = $rect.Right - $rect.Left
-                height = $rect.Bottom - $rect.Top
-              }
-            }
-          }
-        }
-        return $true
-      }
-
-      [Win32]::EnumWindows($callback, 0)
-      $windows | ConvertTo-Json
-    `;
+    const script = [
+      'Add-Type @"',
+      'using System;',
+      'using System.Text;',
+      'using System.Runtime.InteropServices;',
+      'public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);',
+      'public class Win32 {',
+      '  [DllImport("user32.dll")]',
+      '  public static extern bool EnumWindows(EnumWindowsProc enumProc, IntPtr lParam);',
+      '  [DllImport("user32.dll", CharSet=CharSet.Unicode)]',
+      '  public static extern int GetWindowText(IntPtr hWnd, System.Text.StringBuilder lpString, int nMaxCount);',
+      '  [DllImport("user32.dll")]',
+      '  public static extern bool IsWindowVisible(IntPtr hWnd);',
+      '  [DllImport("user32.dll")]',
+      '  public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);',
+      '  [StructLayout(LayoutKind.Sequential)]',
+      '  public struct RECT { public int Left; public int Top; public int Right; public int Bottom; }',
+      '}',
+      '@"',
+      '',
+      '$windows = @()',
+      '$callback = [Win32+EnumWindowsProc]{',
+      '  param($hwnd, $lparam)',
+      '  if ([Win32]::IsWindowVisible($hwnd)) {',
+      '    $titleBuilder = New-Object System.Text.StringBuilder 256',
+      '    [Win32]::GetWindowText($hwnd, $titleBuilder, 256) | Out-Null',
+      '    $title = $titleBuilder.ToString().Trim()',
+      '    if ($title) {',
+      '      $rect = New-Object Win32+RECT',
+      '      [Win32]::GetWindowRect($hwnd, [ref]$rect) | Out-Null',
+      '      $windows += @{',
+      '        id = $hwnd.ToString()',
+      '        title = $title',
+      '        bounds = @{',
+      '          x = $rect.Left',
+      '          y = $rect.Top',
+      '          width = $rect.Right - $rect.Left',
+      '          height = $rect.Bottom - $rect.Top',
+      '        }',
+      '      }',
+      '    }',
+      '  }',
+      '  return $true',
+      '}',
+      '',
+      '[Win32]::EnumWindows($callback, 0) | Out-Null',
+      '$windows | ConvertTo-Json',
+    ].join('\n');
 
     try {
       const result = await this.executePowerShell(script);
@@ -164,7 +166,7 @@ export class WindowManager {
 
   private executePowerShell(script: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      exec(`powershell -Command "${script}"`, { shell: 'powershell.exe' }, (error, stdout, stderr) => {
+      execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], (error, stdout, stderr) => {
         if (error) {
           reject(error);
         } else {
@@ -344,7 +346,18 @@ export class WindowManager {
           `osascript -e 'tell application "System Events" to set frontmost of process "${windowInfo.appName}" to true'`
         );
       } else if (platform() === 'win32') {
-        const script = `Add-Type @"\nusing System;\nusing System.Runtime.InteropServices;\npublic class Win32 { [DllImport(\"user32.dll\")] public static extern bool SetForegroundWindow(IntPtr hWnd); }\n"@\n$hwnd = [IntPtr]::new(${windowId})\n[Win32]::SetForegroundWindow($hwnd)`;
+        const script = [
+          'Add-Type @"',
+          'using System;',
+          'using System.Runtime.InteropServices;',
+          'public class Win32 {',
+          '  [DllImport("user32.dll")]',
+          '  public static extern bool SetForegroundWindow(IntPtr hWnd);',
+          '}',
+          '@"',
+          `$hwnd = [IntPtr]::new(${windowId})`,
+          '[Win32]::SetForegroundWindow($hwnd)',
+        ].join('\n');
         await this.executePowerShell(script);
       } else {
         await this.executeCommand(`xdotool windowactivate ${windowId}`);
@@ -420,7 +433,18 @@ export class WindowManager {
         );
       } else if (platform() === 'win32') {
         // Windows minimize placeholder
-        const script = `Add-Type @"\nusing System;\nusing System.Runtime.InteropServices;\npublic class Win32 { [DllImport(\"user32.dll\")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow); }\n"@\n$hwnd = [IntPtr]::new(${windowId})\n[Win32]::ShowWindow($hwnd, 2)`;
+        const script = [
+          'Add-Type @"',
+          'using System;',
+          'using System.Runtime.InteropServices;',
+          'public class Win32 {',
+          '  [DllImport("user32.dll")]',
+          '  public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);',
+          '}',
+          '@"',
+          `$hwnd = [IntPtr]::new(${windowId})`,
+          '[Win32]::ShowWindow($hwnd, 2)',
+        ].join('\n');
         await this.executePowerShell(script);
       } else {
         await this.executeCommand(`xdotool windowminimize ${windowId}`);

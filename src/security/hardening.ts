@@ -2,8 +2,17 @@ import { BrowserWindow, session } from 'electron';
 import { logInfo } from '../logging/logger';
 
 const defaultCsp = [
-  "default-src 'self'", 
-  "script-src 'self' 'unsafe-inline'", 
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline' https:",
+  "img-src 'self' data:",
+  "font-src 'self' data:",
+  "connect-src 'self' https: wss:",
+].join('; ');
+
+const devCsp = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
   "style-src 'self' 'unsafe-inline' https:",
   "img-src 'self' data:",
   "font-src 'self' data:",
@@ -16,7 +25,7 @@ export const applySecurityHardening = (mainWindow: BrowserWindow) => {
   webContents.session.webRequest.onHeadersReceived((details, callback) => {
     const responseHeaders = {
       ...details.responseHeaders,
-      'Content-Security-Policy': [defaultCsp],
+      'Content-Security-Policy': [process.env.NODE_ENV === 'development' ? devCsp : defaultCsp],
       'X-Content-Type-Options': ['nosniff'],
       'X-Frame-Options': ['DENY'],
       'Referrer-Policy': ['strict-origin-when-cross-origin'],

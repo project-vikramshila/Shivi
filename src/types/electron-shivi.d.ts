@@ -123,7 +123,10 @@ interface ShiviAPI {
   getSyncStatus: () => Promise<SyncStatusResponse>;
 
   // AI
-  getGeminiApiKey: () => Promise<string | null>;
+  ai: {
+    isGeminiAvailable: () => Promise<boolean>;
+    enhanceResponse: (localResponse: string, request: any) => Promise<string | null>;
+  };
 
   // Notifications
   showNotification: (options: NotificationOptions) => Promise<{ success: boolean }>;

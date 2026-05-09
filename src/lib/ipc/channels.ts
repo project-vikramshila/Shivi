@@ -6,6 +6,7 @@ export const IPC_CHANNELS = {
   AI: {
     GET_GEMINI_KEY: 'ai:get-gemini-api-key',
     HAS_KEY: 'ai:has-key',
+    ENHANCE_RESPONSE: 'ai:enhance-response',
   },
   MEMORY: {
     ENQUEUE_SYNC: 'memory:enqueue-sync',

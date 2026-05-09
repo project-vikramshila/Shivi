@@ -1,7 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import * as path from 'path';
 
-const ipcChannelsPath = path.join(__dirname, '../lib/ipc/channels');
+const ipcChannelsPath = `${__dirname}/../lib/ipc/channels`;
 const { IPC_CHANNELS } = require(ipcChannelsPath);
 
 // Safe invoke wrapper
@@ -29,6 +28,9 @@ const shiviAPI = {
     isGeminiAvailable: async () => {
       const res = await safeInvoke(IPC_CHANNELS.AI.HAS_KEY);
       return !!res;
+    },
+    enhanceResponse: async (localResponse: string, request: any) => {
+      return await safeInvoke(IPC_CHANNELS.AI.ENHANCE_RESPONSE, localResponse, request);
     },
   },
 

@@ -46,8 +46,9 @@ export class GeminiAI {
         return process.env.GEMINI_API_KEY;
       }
 
-      if (typeof window !== 'undefined' && (window as any).shiviApi?.getGeminiApiKey) {
-        return await (window as any).shiviApi.getGeminiApiKey();
+      if (typeof window !== 'undefined' && (window as any).shiviApi?.ai?.enhanceResponse) {
+        // Use IPC-based enhancement instead of direct key access
+        return 'ipc-based'; // Signal to use IPC method
       }
 
       return null;
@@ -59,6 +60,13 @@ export class GeminiAI {
 
   async enhanceResponse(localResponse: string, request: GeminiRequest): Promise<string | null> {
     try {
+      // Check if we should use IPC-based enhancement
+      const apiKey = await this.getApiKey();
+      if (apiKey === 'ipc-based' && typeof window !== 'undefined' && (window as any).shiviApi?.ai?.enhanceResponse) {
+        return await (window as any).shiviApi.ai.enhanceResponse(localResponse, request);
+      }
+
+      // Fallback to direct API access (for main process or when IPC not available)
       await this.initialize();
 
       if (!this.genAI) return null;

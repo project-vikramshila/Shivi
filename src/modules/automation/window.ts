@@ -84,7 +84,7 @@ export class WindowManager {
   private async updateWindowsWindows() {
     // Use PowerShell to get window information
     const script = [
-      'Add-Type @"',
+      'Add-Type -TypeDefinition @"',
       'using System;',
       'using System.Text;',
       'using System.Runtime.InteropServices;',
@@ -166,7 +166,8 @@ export class WindowManager {
 
   private executePowerShell(script: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], (error, stdout, stderr) => {
+      const encodedCommand = Buffer.from(script, 'utf16le').toString('base64');
+      execFile('powershell.exe', ['-NoProfile', '-NonInteractive', '-EncodedCommand', encodedCommand], (error, stdout, stderr) => {
         if (error) {
           reject(error);
         } else {
@@ -347,7 +348,7 @@ export class WindowManager {
         );
       } else if (platform() === 'win32') {
         const script = [
-          'Add-Type @"',
+          'Add-Type -TypeDefinition @"',
           'using System;',
           'using System.Runtime.InteropServices;',
           'public class Win32 {',
@@ -434,7 +435,7 @@ export class WindowManager {
       } else if (platform() === 'win32') {
         // Windows minimize placeholder
         const script = [
-          'Add-Type @"',
+          'Add-Type -TypeDefinition @"',
           'using System;',
           'using System.Runtime.InteropServices;',
           'public class Win32 {',

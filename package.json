@@ -8,9 +8,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "concurrently \"npm run dev:main\" \"npm run dev:renderer\"",
-    "dev:main": "NODE_ENV=development npm run build:main && npm run dev:main:electron",
-    "dev:main:electron": "NODE_ENV=development xvfb-run -a electron --disable-gpu dist/main/main.js",
-    "dev:renderer": "NODE_ENV=development webpack serve --mode development --config webpack.config.js",
+    "dev:main": "cross-env NODE_ENV=development npm run build:main && npm run dev:main:electron",
+    "dev:main:electron": "cross-env NODE_ENV=development electron --disable-gpu dist/main/main.js",
+    "dev:renderer": "cross-env NODE_ENV=development webpack serve --mode development --config webpack.config.js",
     "build": "npm run build:main && npm run build:renderer",
     "build:main": "tsc -p tsconfig.json --outDir dist",
     "build:renderer": "webpack --mode production --config webpack.config.js",
@@ -21,7 +21,7 @@
     "dist:portable": "npm run build && electron-builder --config electron-builder.yml --win portable",
     "release:stable": "cross-env UPDATE_CHANNEL=stable npm run dist -- --publish always",
     "release:beta": "cross-env UPDATE_CHANNEL=beta npm run dist -- --publish always",
-    "start": "NODE_ENV=production xvfb-run -a electron --disable-gpu dist/main/main.js",
+    "start": "cross-env NODE_ENV=production electron --disable-gpu dist/main/main.js",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
     "test": "jest --config jest.config.js"

@@ -15,6 +15,10 @@ const AutomationPage = () => {
 
   const loadHistory = async () => {
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       const response = await (window as any).shiviApi.automation.getTaskHistory();
       if (response?.success) {
         setHistory(response.history || []);
@@ -33,6 +37,10 @@ const AutomationPage = () => {
     setTaskResult(null);
 
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       const response = await (window as any).shiviApi.automation.planTask(request);
       if (response?.success) {
         setPlan(response.plan);
@@ -56,6 +64,10 @@ const AutomationPage = () => {
     setTaskResult(null);
 
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       const execution = await (window as any).shiviApi.automation.executeTask({
         id: plan.taskId,
         description: plan.description,

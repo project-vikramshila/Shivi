@@ -31,6 +31,11 @@ class BaseConnector implements AppConnector {
   async summarizeRecentActivity(limit = 5): Promise<string> {
     return `Summary of the last ${limit} items in ${this.displayName}.`;
   }
+
+  async execute(action: string, params: Record<string, any>): Promise<any> {
+    // Default implementation - connectors that support execution should override this
+    throw new Error(`${this.displayName} does not support execution of action: ${action}`);
+  }
 }
 
 class ConnectorRegistry {

@@ -37,6 +37,10 @@ const AutomationControls: React.FC<AutomationControlsProps> = ({ className }) =>
 
   const loadStatus = async () => {
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       const statusData = await (window as any).shiviApi.automation.getStatus();
       setStatus(statusData);
       setIsEnabled(statusData.enabled);
@@ -48,6 +52,10 @@ const AutomationControls: React.FC<AutomationControlsProps> = ({ className }) =>
 
   const loadConfig = async () => {
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       const configData = await (window as any).shiviApi.automation.getConfig();
       setConfig(configData);
     } catch (error) {
@@ -57,6 +65,10 @@ const AutomationControls: React.FC<AutomationControlsProps> = ({ className }) =>
 
   const loadLogs = async () => {
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       const logsData = await (window as any).shiviApi.automation.getLogs();
       setLogs(logsData.slice(-10)); // Show last 10 logs
     } catch (error) {
@@ -66,6 +78,10 @@ const AutomationControls: React.FC<AutomationControlsProps> = ({ className }) =>
 
   const toggleAutomation = async () => {
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       if (isEnabled) {
         await (window as any).shiviApi.automation.disable();
         setIsEnabled(false);
@@ -81,6 +97,10 @@ const AutomationControls: React.FC<AutomationControlsProps> = ({ className }) =>
 
   const emergencyStop = async () => {
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       await (window as any).shiviApi.automation.emergencyStop();
       setIsExecuting(false);
       await loadStatus();
@@ -92,6 +112,10 @@ const AutomationControls: React.FC<AutomationControlsProps> = ({ className }) =>
 
   const clearLogs = async () => {
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       await (window as any).shiviApi.automation.clearLogs();
       setLogs([]);
     } catch (error) {
@@ -101,6 +125,10 @@ const AutomationControls: React.FC<AutomationControlsProps> = ({ className }) =>
 
   const grantPermission = async (appName: string, level: string) => {
     try {
+      if (!(window as any).shiviApi?.automation) {
+        console.warn('Shivi API automation not available');
+        return;
+      }
       await (window as any).shiviApi.automation.grantPermission(appName, level);
       await loadConfig();
     } catch (error) {

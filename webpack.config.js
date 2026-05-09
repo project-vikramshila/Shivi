@@ -9,6 +9,10 @@ const env = dotenv.config().parsed || {};
 const excludedEnvKeys = ['GEMINI_API_KEY', 'DATABASE_URL', 'DATABASE_PASSWORD'];
 
 const envKeys = Object.keys(env).reduce((prev, next) => {
+  // Skip NODE_ENV - webpack handles it automatically
+  if (next === 'NODE_ENV') {
+    return prev;
+  }
   // Never expose sensitive keys to renderer
   if (!excludedEnvKeys.includes(next)) {
     prev[`process.env.${next}`] = JSON.stringify(env[next]);

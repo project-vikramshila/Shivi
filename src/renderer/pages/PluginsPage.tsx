@@ -17,9 +17,20 @@ const PluginsPage = () => {
 
   const refreshPlugins = async () => {
     setLoading(true);
-    const list = await (window as any).shiviApi.plugins.list();
-    setPlugins(Array.isArray(list) ? list : []);
-    setLoading(false);
+    try {
+      if (!(window as any).shiviApi?.plugins) {
+        console.warn('Shivi API plugins not available');
+        setPlugins([]);
+        return;
+      }
+      const list = await (window as any).shiviApi.plugins.list();
+      setPlugins(Array.isArray(list) ? list : []);
+    } catch (error) {
+      console.error('Failed to load plugins:', error);
+      setPlugins([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -27,12 +38,20 @@ const PluginsPage = () => {
   }, []);
 
   const togglePlugin = async (plugin: PluginInfo) => {
-    if (plugin.enabled) {
-      await (window as any).shiviApi.plugins.disable(plugin.id);
-    } else {
-      await (window as any).shiviApi.plugins.enable(plugin.id);
+    try {
+      if (!(window as any).shiviApi?.plugins) {
+        console.warn('Shivi API plugins not available');
+        return;
+      }
+      if (plugin.enabled) {
+        await (window as any).shiviApi.plugins.disable(plugin.id);
+      } else {
+        await (window as any).shiviApi.plugins.enable(plugin.id);
+      }
+      refreshPlugins();
+    } catch (error) {
+      console.error('Failed to toggle plugin:', error);
     }
-    refreshPlugins();
   };
 
   return (

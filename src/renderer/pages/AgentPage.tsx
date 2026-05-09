@@ -35,6 +35,10 @@ const AgentPage = () => {
 
   const refreshStatus = async () => {
     try {
+      if (!(window as any).shiviApi?.agent) {
+        console.warn('Shivi API agent not available');
+        return;
+      }
       const goalResponse = await (window as any).shiviApi.agent.listGoals();
       const workflowResponse = await (window as any).shiviApi.agent.listActiveWorkflows();
       setGoals(goalResponse || []);
@@ -56,6 +60,11 @@ const AgentPage = () => {
     setStatus('Creating autonomous goal…');
 
     try {
+      if (!(window as any).shiviApi?.agent) {
+        console.warn('Shivi API agent not available');
+        setStatus('Agent API not available. Please restart the application.');
+        return;
+      }
       const goal = await (window as any).shiviApi.agent.createGoal({
         title,
         description,

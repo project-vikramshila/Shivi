@@ -169,4 +169,45 @@ export const AgentDashboard: React.FC<AgentDashboardProps> = ({
                       <label className="text-gray-600">Running for:</label>
                       <span className="ml-2 text-blue-600">{Math.round((Date.now() - step.startedAt) / 1000)}s</span>
                     </div>
-                  )}\n                  {step.finishedAt && step.startedAt && (\n                    <div>\n                      <label className=\"text-gray-600\">Duration:</label>\n                      <span className=\"ml-2 text-gray-900\">{Math.round((step.finishedAt - step.startedAt) / 1000)}s</span>\n                    </div>\n                  )}\n                  {step.error && (\n                    <div>\n                      <label className=\"text-red-600\">Error:</label>\n                      <p className=\"ml-2 text-red-600 font-mono text-xs mt-1 bg-red-50 p-2 rounded\">{step.error}</p>\n                    </div>\n                  )}\n                </div>\n              )}\n            </div>\n          ))}\n        </div>\n      </div>\n\n      {/* Stats Footer */}\n      <div className=\"grid grid-cols-4 gap-3 text-center\">\n        <div className=\"bg-green-50 p-3 rounded\">\n          <p className=\"text-2xl font-bold text-green-600\">{completedSteps}</p>\n          <p className=\"text-xs text-green-700\">Completed</p>\n        </div>\n        <div className=\"bg-blue-50 p-3 rounded\">\n          <p className=\"text-2xl font-bold text-blue-600\">{workflow.steps.filter(s => s.status === 'running').length}</p>\n          <p className=\"text-xs text-blue-700\">Running</p>\n        </div>\n        <div className=\"bg-yellow-50 p-3 rounded\">\n          <p className=\"text-2xl font-bold text-yellow-600\">{workflow.steps.filter(s => s.status === 'pending').length}</p>\n          <p className=\"text-xs text-yellow-700\">Pending</p>\n        </div>\n        <div className=\"bg-red-50 p-3 rounded\">\n          <p className=\"text-2xl font-bold text-red-600\">{failedSteps}</p>\n          <p className=\"text-xs text-red-700\">Failed</p>\n        </div>\n      </div>\n    </div>\n  );\n};
+                  )}
+                  {step.finishedAt && step.startedAt && (
+                    <div>
+                      <label className="text-gray-600">Duration:</label>
+                      <span className="ml-2 text-gray-900">{Math.round((step.finishedAt - step.startedAt) / 1000)}s</span>
+                    </div>
+                  )}
+                  {step.error && (
+                    <div>
+                      <label className="text-red-600">Error:</label>
+                      <p className="ml-2 text-red-600 font-mono text-xs mt-1 bg-red-50 p-2 rounded">{step.error}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats Footer */}
+      <div className="grid grid-cols-4 gap-3 text-center">
+        <div className="bg-green-50 p-3 rounded">
+          <p className="text-2xl font-bold text-green-600">{completedSteps}</p>
+          <p className="text-xs text-green-700">Completed</p>
+        </div>
+        <div className="bg-blue-50 p-3 rounded">
+          <p className="text-2xl font-bold text-blue-600">{workflow.steps.filter(s => s.status === 'running').length}</p>
+          <p className="text-xs text-blue-700">Running</p>
+        </div>
+        <div className="bg-yellow-50 p-3 rounded">
+          <p className="text-2xl font-bold text-yellow-600">{workflow.steps.filter(s => s.status === 'pending').length}</p>
+          <p className="text-xs text-yellow-700">Pending</p>
+        </div>
+        <div className="bg-red-50 p-3 rounded">
+          <p className="text-2xl font-bold text-red-600">{failedSteps}</p>
+          <p className="text-xs text-red-700">Failed</p>
+        </div>
+      </div>
+    </div>
+  );
+};

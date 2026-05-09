@@ -56,6 +56,29 @@ export class AgentContextManager {
     const summaries = this.getAppContexts().map((context) => `(${context.appId}: ${context.summary})`);
     return `Active app context: ${summaries.join('; ')}.`;
   }
+
+  async buildWorkflowContext(goalId: string): Promise<Record<string, any> | null> {
+    const goal = this.goalHistory.find(g => g.id === goalId);
+    const contexts = this.getAppContexts();
+    if (contexts.length === 0 && !goal) {
+      return null;
+    }
+
+    const contextStr = contexts.length > 0
+      ? contexts.map((ctx) => `[${ctx.appId}] ${ctx.summary}`).join('\n')
+      : 'No app contexts available';
+
+    return {
+      goal: goal ? {
+        id: goal.id,
+        title: goal.title,
+        description: goal.description,
+        targetApps: goal.targetApps,
+      } : null,
+      appContexts: contextStr,
+      timestamp: Date.now(),
+    };
+  }
 }
 
 export const agentContextManager = new AgentContextManager();

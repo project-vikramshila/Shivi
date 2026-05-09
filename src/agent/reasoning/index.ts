@@ -1,8 +1,8 @@
 import type { AgentTaskStep, AutonomySettings } from '../core/types';
 
 export class AgentReasoningEngine {
-  assessFailure(step: AgentTaskStep, error?: string, autonomy: AutonomySettings) {
-    const failureMessage = error || 'Unknown failure';
+  assessFailure(step: AgentTaskStep, autonomy: AutonomySettings, error: string = 'Unknown failure') {
+    const failureMessage = error;
     const retries = this.shouldRetry(step, failureMessage) ? 2 : 0;
     const fallbackAction = this.selectFallback(step, failureMessage);
 

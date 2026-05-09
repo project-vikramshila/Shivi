@@ -30,4 +30,222 @@ export const TaskManagementUI: React.FC<TaskManagementUIProps> = ({
   });
 
   const toggleTaskDetails = (taskId: string) => {
-    const newExpanded = new Set(expandedTasks);\n    if (newExpanded.has(taskId)) {\n      newExpanded.delete(taskId);\n    } else {\n      newExpanded.add(taskId);\n    }\n    setExpandedTasks(newExpanded);\n  };\n\n  const getPriorityColor = (priority: TaskPriority): string => {\n    switch (priority) {\n      case 'critical':\n        return 'bg-red-100 text-red-800 border-red-300';\n      case 'high':\n        return 'bg-orange-100 text-orange-800 border-orange-300';\n      case 'normal':\n        return 'bg-blue-100 text-blue-800 border-blue-300';\n      case 'low':\n        return 'bg-gray-100 text-gray-800 border-gray-300';\n    }\n  };\n\n  const getStatusColor = (status: TaskStatus): string => {\n    switch (status) {\n      case 'completed':\n        return 'text-green-600 bg-green-50';\n      case 'running':\n        return 'text-blue-600 bg-blue-50';\n      case 'paused':\n        return 'text-yellow-600 bg-yellow-50';\n      case 'failed':\n        return 'text-red-600 bg-red-50';\n      case 'queued':\n        return 'text-purple-600 bg-purple-50';\n      case 'scheduled':\n        return 'text-indigo-600 bg-indigo-50';\n      case 'cancelled':\n        return 'text-gray-600 bg-gray-50';\n    }\n  };\n\n  const getStatusIcon = (status: TaskStatus): string => {\n    switch (status) {\n      case 'completed':\n        return '✓';\n      case 'running':\n        return '⟳';\n      case 'paused':\n        return '⏸';\n      case 'failed':\n        return '✕';\n      case 'queued':\n        return '⧖';\n      case 'scheduled':\n        return '⏰';\n      case 'cancelled':\n        return '✗';\n    }\n  };\n\n  const getRuntime = (task: AgentTask): string => {\n    if (!task.startedAt) return '-';\n    const end = task.completedAt || Date.now();\n    const seconds = Math.round((end - task.startedAt) / 1000);\n    if (seconds < 60) return `${seconds}s`;\n    const minutes = Math.round(seconds / 60);\n    return `${minutes}m`;\n  };\n\n  return (\n    <div className=\"space-y-4\">\n      {/* Header */}\n      <div className=\"bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-lg shadow-md\">\n        <h2 className=\"text-xl font-bold mb-2\">📋 Task Management</h2>\n        <p className=\"text-sm opacity-90\">\n          {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''}\n          {tasks.length > filteredTasks.length && ` (${tasks.length} total)`}\n        </p>\n      </div>\n\n      {/* Filters */}\n      <div className=\"flex gap-3 bg-gray-50 p-3 rounded-lg\">\n        <select\n          value={filterStatus}\n          onChange={e => setFilterStatus(e.target.value as any)}\n          className=\"px-3 py-2 bg-white border border-gray-300 rounded text-sm\"\n        >\n          <option value=\"all\">All Status</option>\n          <option value=\"queued\">Queued</option>\n          <option value=\"scheduled\">Scheduled</option>\n          <option value=\"running\">Running</option>\n          <option value=\"paused\">Paused</option>\n          <option value=\"completed\">Completed</option>\n          <option value=\"failed\">Failed</option>\n          <option value=\"cancelled\">Cancelled</option>\n        </select>\n        <select\n          value={filterPriority}\n          onChange={e => setFilterPriority(e.target.value as any)}\n          className=\"px-3 py-2 bg-white border border-gray-300 rounded text-sm\"\n        >\n          <option value=\"all\">All Priorities</option>\n          <option value=\"critical\">Critical</option>\n          <option value=\"high\">High</option>\n          <option value=\"normal\">Normal</option>\n          <option value=\"low\">Low</option>\n        </select>\n      </div>\n\n      {/* Tasks List */}\n      <div className=\"bg-white rounded-lg shadow border border-gray-200 overflow-hidden\">\n        {filteredTasks.length === 0 ? (\n          <div className=\"p-8 text-center text-gray-500\">\n            <p>No tasks found</p>\n          </div>\n        ) : (\n          <div className=\"divide-y\">\n            {filteredTasks.map(task => (\n              <div key={task.id} className=\"p-4 hover:bg-gray-50 transition\">\n                {/* Task Header */}\n                <button\n                  onClick={() => toggleTaskDetails(task.id)}\n                  className=\"w-full flex items-center justify-between text-left\"\n                >\n                  <div className=\"flex items-center gap-3 flex-1\">\n                    {/* Status Icon */}\n                    <span className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${getStatusColor(task.status)}`}>\n                      {getStatusIcon(task.status)}\n                    </span>\n\n                    {/* Task Info */}\n                    <div className=\"flex-1\">\n                      <div className=\"flex items-center gap-2\">\n                        <p className=\"font-semibold text-gray-900\">{task.goal.title}</p>\n                        <span className={`px-2 py-1 rounded text-xs font-medium border ${getPriorityColor(task.priority)}`}>\n                          {task.priority.toUpperCase()}\n                        </span>\n                      </div>\n                      <p className=\"text-sm text-gray-600 mt-1\">{task.goal.description}</p>\n                    </div>\n                  </div>\n\n                  {/* Expand Icon */}\n                  <span className=\"text-gray-400 ml-2\">{expandedTasks.has(task.id) ? '▼' : '▶'}</span>\n                </button>\n\n                {/* Task Details */}\n                {expandedTasks.has(task.id) && (\n                  <div className=\"mt-4 pl-11 border-l-2 border-gray-200 pt-4 space-y-2 text-sm\">\n                    <div className=\"grid grid-cols-2 gap-3\">\n                      <div>\n                        <label className=\"text-gray-600\">Status:</label>\n                        <p className=\"font-mono text-gray-900\">{task.status}</p>\n                      </div>\n                      <div>\n                        <label className=\"text-gray-600\">Runtime:</label>\n                        <p className=\"font-mono text-gray-900\">{getRuntime(task)}</p>\n                      </div>\n                      {task.scheduledFor && (\n                        <div>\n                          <label className=\"text-gray-600\">Scheduled:</label>\n                          <p className=\"font-mono text-gray-900\">\n                            {new Date(task.scheduledFor).toLocaleTimeString()}\n                          </p>\n                        </div>\n                      )}\n                      {task.retry && (\n                        <div>\n                          <label className=\"text-gray-600\">Retries:</label>\n                          <p className=\"font-mono text-gray-900\">{task.retry.count}/{task.retry.maxRetries}</p>\n                        </div>\n                      )}\n                    </div>\n\n                    {/* Task Actions */}\n                    <div className=\"flex gap-2 mt-3 pt-3 border-t border-gray-200\">\n                      {task.status === 'running' && (\n                        <>\n                          <button\n                            onClick={() => onPauseTask?.(task.id)}\n                            className=\"px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded text-xs transition\"\n                          >\n                            ⏸ Pause\n                          </button>\n                          <button\n                            onClick={() => onCancelTask?.(task.id)}\n                            className=\"px-2 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-xs transition\"\n                          >\n                            ✕ Cancel\n                          </button>\n                        </>\n                      )}\n                      {task.status === 'paused' && (\n                        <button\n                          onClick={() => onResumeTask?.(task.id)}\n                          className=\"px-2 py-1 bg-green-100 hover:bg-green-200 text-green-800 rounded text-xs transition\"\n                        >\n                          ▶ Resume\n                        </button>\n                      )}\n                      {task.status === 'failed' && (\n                        <button\n                          onClick={() => onRetryTask?.(task.id)}\n                          className=\"px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-xs transition\"\n                        >\n                          🔄 Retry\n                        </button>\n                      )}\n                    </div>\n                  </div>\n                )}\n              </div>\n            ))}\n          </div>\n        )}\n      </div>\n    </div>\n  );\n};
+    const newExpanded = new Set(expandedTasks);
+    if (newExpanded.has(taskId)) {
+      newExpanded.delete(taskId);
+    } else {
+      newExpanded.add(taskId);
+    }
+    setExpandedTasks(newExpanded);
+  };
+
+  const getPriorityColor = (priority: TaskPriority): string => {
+    switch (priority) {
+      case 'critical':
+        return 'bg-red-100 text-red-800 border-red-300';
+      case 'high':
+        return 'bg-orange-100 text-orange-800 border-orange-300';
+      case 'normal':
+        return 'bg-blue-100 text-blue-800 border-blue-300';
+      case 'low':
+        return 'bg-gray-100 text-gray-800 border-gray-300';
+    }
+  };
+
+  const getStatusColor = (status: TaskStatus): string => {
+    switch (status) {
+      case 'completed':
+        return 'text-green-600 bg-green-50';
+      case 'running':
+        return 'text-blue-600 bg-blue-50';
+      case 'paused':
+        return 'text-yellow-600 bg-yellow-50';
+      case 'failed':
+        return 'text-red-600 bg-red-50';
+      case 'queued':
+        return 'text-purple-600 bg-purple-50';
+      case 'scheduled':
+        return 'text-indigo-600 bg-indigo-50';
+      case 'cancelled':
+        return 'text-gray-600 bg-gray-50';
+    }
+  };
+
+  const getStatusIcon = (status: TaskStatus): string => {
+    switch (status) {
+      case 'completed':
+        return '✓';
+      case 'running':
+        return '⟳';
+      case 'paused':
+        return '⏸';
+      case 'failed':
+        return '✕';
+      case 'queued':
+        return '⧖';
+      case 'scheduled':
+        return '⏰';
+      case 'cancelled':
+        return '✗';
+    }
+  };
+
+  const getRuntime = (task: AgentTask): string => {
+    if (!task.startedAt) return '-';
+    const end = task.completedAt || Date.now();
+    const seconds = Math.round((end - task.startedAt) / 1000);
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.round(seconds / 60);
+    return `${minutes}m`;
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-2">📋 Task Management</h2>
+        <p className="text-sm opacity-90">
+          {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''}
+          {tasks.length > filteredTasks.length && ` (${tasks.length} total)`}
+        </p>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-3 bg-gray-50 p-3 rounded-lg">
+        <select
+          value={filterStatus}
+          onChange={e => setFilterStatus(e.target.value as any)}
+          className="px-3 py-2 bg-white border border-gray-300 rounded text-sm"
+        >
+          <option value="all">All Status</option>
+          <option value="queued">Queued</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="running">Running</option>
+          <option value="paused">Paused</option>
+          <option value="completed">Completed</option>
+          <option value="failed">Failed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select
+          value={filterPriority}
+          onChange={e => setFilterPriority(e.target.value as any)}
+          className="px-3 py-2 bg-white border border-gray-300 rounded text-sm"
+        >
+          <option value="all">All Priorities</option>
+          <option value="critical">Critical</option>
+          <option value="high">High</option>
+          <option value="normal">Normal</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+
+      {/* Tasks List */}
+      <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+        {filteredTasks.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            <p>No tasks found</p>
+          </div>
+        ) : (
+          <div className="divide-y">
+            {filteredTasks.map(task => (
+              <div key={task.id} className="p-4 hover:bg-gray-50 transition">
+                {/* Task Header */}
+                <button
+                  onClick={() => toggleTaskDetails(task.id)}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    {/* Status Icon */}
+                    <span className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${getStatusColor(task.status)}`}>
+                      {getStatusIcon(task.status)}
+                    </span>
+
+                    {/* Task Info */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-gray-900">{task.goal.title}</p>
+                        <span className={`px-2 py-1 rounded text-xs font-medium border ${getPriorityColor(task.priority)}`}>
+                          {task.priority.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-1">{task.goal.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Expand Icon */}
+                  <span className="text-gray-400 ml-2">{expandedTasks.has(task.id) ? '▼' : '▶'}</span>
+                </button>
+
+                {/* Task Details */}
+                {expandedTasks.has(task.id) && (
+                  <div className="mt-4 pl-11 border-l-2 border-gray-200 pt-4 space-y-2 text-sm">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-gray-600">Status:</label>
+                        <p className="font-mono text-gray-900">{task.status}</p>
+                      </div>
+                      <div>
+                        <label className="text-gray-600">Runtime:</label>
+                        <p className="font-mono text-gray-900">{getRuntime(task)}</p>
+                      </div>
+                      {task.scheduledFor && (
+                        <div>
+                          <label className="text-gray-600">Scheduled:</label>
+                          <p className="font-mono text-gray-900">
+                            {new Date(task.scheduledFor).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      )}
+                      {task.retry && (
+                        <div>
+                          <label className="text-gray-600">Retries:</label>
+                          <p className="font-mono text-gray-900">{task.retry.count}/{task.retry.maxRetries}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Task Actions */}
+                    <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+                      {task.status === 'running' && (
+                        <>
+                          <button
+                            onClick={() => onPauseTask?.(task.id)}
+                            className="px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 rounded text-xs transition"
+                          >
+                            ⏸ Pause
+                          </button>
+                          <button
+                            onClick={() => onCancelTask?.(task.id)}
+                            className="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-xs transition"
+                          >
+                            ✕ Cancel
+                          </button>
+                        </>
+                      )}
+                      {task.status === 'paused' && (
+                        <button
+                          onClick={() => onResumeTask?.(task.id)}
+                          className="px-2 py-1 bg-green-100 hover:bg-green-200 text-green-800 rounded text-xs transition"
+                        >
+                          ▶ Resume
+                        </button>
+                      )}
+                      {task.status === 'failed' && (
+                        <button
+                          onClick={() => onRetryTask?.(task.id)}
+                          className="px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded text-xs transition"
+                        >
+                          🔄 Retry
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

@@ -13,7 +13,7 @@ import { CheckpointManager } from '../checkpoints';
 import { taskQueue } from '../tasks';
 import { aiDecisionEngine } from '../ai-engine';
 import { connectorRegistry } from '../connectors';
-import type { AgentWorkflow, AgentTaskStep, AutonomySettings, WorkflowRunResult, AgentGoal } from '../core/types';
+import type { AgentWorkflow, AgentTaskStep, AutonomySettings, WorkflowRunResult, AgentGoal, AgentEventType } from '../core/types';
 import type { TaskPriority } from '../tasks';
 
 export class EnhancedAgentExecutionEngine {
@@ -215,6 +215,9 @@ export class EnhancedAgentExecutionEngine {
           }
 
           // Execute through connector
+          if (!connector.execute) {
+            return { success: false, error: `Connector ${step.app} does not support execution` };
+          }
           const success = await connector.execute(step.action, step.params);
           return {
             success,

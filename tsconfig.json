@@ -30,7 +30,7 @@
       "@shared/*": ["shared/*"],
       "@types/*": ["types/*"]
     },
-    "types": ["node", "electron"]
+    "types": ["node", "electron", "./src/types/global"]
   },
   "include": ["src/**/*", "src/types/**/*"],
   "exclude": ["node_modules", "dist"]

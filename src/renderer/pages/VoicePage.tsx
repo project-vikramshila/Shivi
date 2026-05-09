@@ -63,6 +63,11 @@ const VoicePage = () => {
 
   const initializeVoiceEngine = async () => {
     try {
+      if (!(window as any).shiviApi?.voice) {
+        console.warn('Shivi API voice not available');
+        setError('Voice API not available. Please restart the application.');
+        return;
+      }
       // Initialize voice engine through IPC
       await (window as any).shiviApi.voice.initialize();
       setIsInitialized(true);
@@ -77,6 +82,10 @@ const VoicePage = () => {
   };
 
   const setupVoiceEventListeners = () => {
+    if (!(window as any).shiviApi?.voice) {
+      console.warn('Shivi API voice not available for event listeners');
+      return;
+    }
     const voiceApi = (window as any).shiviApi.voice;
 
     // UI state updates
@@ -106,6 +115,10 @@ const VoicePage = () => {
 
   const updateConversation = async () => {
     try {
+      if (!(window as any).shiviApi?.voice) {
+        console.warn('Shivi API voice not available');
+        return;
+      }
       const context = await (window as any).shiviApi.voice.getConversationContext();
       setConversation(context);
     } catch (error) {
@@ -115,6 +128,10 @@ const VoicePage = () => {
 
   const loadConversationHistory = async () => {
     try {
+      if (!(window as any).shiviApi?.voice) {
+        console.warn('Shivi API voice not available');
+        return;
+      }
       const historyData = await (window as any).shiviApi.voice.getConversationHistory(10);
       setHistory(historyData);
     } catch (error) {
@@ -127,6 +144,10 @@ const VoicePage = () => {
     setConfig(updatedConfig);
 
     try {
+      if (!(window as any).shiviApi?.voice) {
+        console.warn('Shivi API voice not available');
+        return;
+      }
       await (window as any).shiviApi.voice.updateConfig(newConfig);
     } catch (error) {
       console.error('Failed to update voice config:', error);
@@ -135,6 +156,11 @@ const VoicePage = () => {
 
   const handleStartListening = async () => {
     try {
+      if (!(window as any).shiviApi?.voice) {
+        console.warn('Shivi API voice not available');
+        setError('Voice API not available. Please restart the application.');
+        return;
+      }
       await (window as any).shiviApi.voice.startListening();
     } catch (error) {
       console.error('Failed to start listening:', error);
@@ -144,6 +170,10 @@ const VoicePage = () => {
 
   const handleStopListening = async () => {
     try {
+      if (!(window as any).shiviApi?.voice) {
+        console.warn('Shivi API voice not available');
+        return;
+      }
       await (window as any).shiviApi.voice.stopListening();
     } catch (error) {
       console.error('Failed to stop listening:', error);
@@ -152,6 +182,10 @@ const VoicePage = () => {
 
   const handleEmergencyStop = async () => {
     try {
+      if (!(window as any).shiviApi?.voice) {
+        console.warn('Shivi API voice not available');
+        return;
+      }
       await (window as any).shiviApi.voice.emergencyStop();
     } catch (error) {
       console.error('Failed to emergency stop:', error);
@@ -160,6 +194,11 @@ const VoicePage = () => {
 
   const handleTestSpeech = async () => {
     try {
+      if (!(window as any).shiviApi?.voice) {
+        console.warn('Shivi API voice not available');
+        setError('Voice API not available. Please restart the application.');
+        return;
+      }
       await (window as any).shiviApi.voice.speak({
         text: 'नमस्ते! मैं शिवी हूं, आपकी व्यक्तिगत AI सहायक। मैं हिंदी में बात कर सकती हूं और आपकी मदद कर सकती हूं।',
         emotion: { type: 'warm', intensity: 0.7 }

@@ -11,7 +11,7 @@ import type {
 } from './types';
 
 export class SpeechToTextEngine implements STTEngine {
-  private recognition: SpeechRecognition | null = null;
+  private recognition: any = null;
   private config: VoiceConfig | null = null;
   private isCurrentlyListening = false;
   private lastResult: SpeechRecognitionResult | null = null;

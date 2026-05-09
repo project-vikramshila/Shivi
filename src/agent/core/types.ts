@@ -3,7 +3,7 @@
  * Shared agent types for workflows, context, permissions, and app connectors
  */
 
-export type AppConnectorId = 'whatsapp' | 'instagram' | 'browser' | 'calendar' | 'email' | 'files' | 'notes';
+export type AppConnectorId = 'whatsapp' | 'instagram' | 'browser' | 'calendar' | 'email' | 'files' | 'notes' | 'core';
 
 export interface AgentGoal {
   id: string;
@@ -66,7 +66,17 @@ export type AgentEventType =
   | 'workflow_completed'
   | 'workflow_failed'
   | 'summary_ready'
-  | 'proactive_alert';
+  | 'proactive_alert'
+  | 'goal_created'
+  | 'goal_started'
+  | 'goal_finished'
+  | 'workflow_paused'
+  | 'workflow_cancelled'
+  | 'workflow_step_started'
+  | 'workflow_step_completed'
+  | 'workflow_step_retry'
+  | 'workflow_needs_confirmation'
+  | 'ai_decision_made';
 
 export interface AppConnector {
   id: AppConnectorId;
@@ -76,6 +86,7 @@ export interface AppConnector {
   fetchContext(): Promise<AppContextSnapshot>;
   search(query: string): Promise<string[]>;
   summarizeRecentActivity(limit?: number): Promise<string>;
+  execute(action: string, params: Record<string, any>): Promise<any>;
 }
 
 export interface WorkflowRunResult {

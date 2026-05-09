@@ -2,7 +2,7 @@ import { agentContextManager } from '../context';
 import { agentEventBus } from '../events';
 import { agentWorkflowEngine } from '../workflows';
 import { AgentReasoningEngine } from '../reasoning';
-import type { AgentWorkflow, AgentTaskStep, AutonomySettings, WorkflowRunResult } from '../core/types';
+import type { AgentWorkflow, AgentTaskStep, AutonomySettings, WorkflowRunResult, AgentEventType, AppConnectorId } from '../core/types';
 import { AutonomyManager } from '../autonomy';
 import { connectorRegistry } from '../connectors';
 
@@ -22,25 +22,25 @@ export class AgentExecutionEngine {
       if (!this.autonomy.canExecuteStep(step, autonomySettings)) {
         workflow.status = 'paused';
         workflow.updatedAt = Date.now();
-        agentWorkflowEngine.updateStep(workflow.id, { id: step.id, status: 'failed', error: 'Autonomy restrictions prevented execution' });
+        agentWorkflowEngine.updateStep(workflow.id, { id: step.id, status: 'failed' as const, error: 'Autonomy restrictions prevented execution' });
         result = { success: false, workflow, durationMs: Date.now() - startTime, error: 'Autonomy restrictions prevented execution' };
         break;
       }
 
       workflow.currentStepIndex = index;
-      const runningStep = { ...step, status: 'running', startedAt: Date.now() };
+      const runningStep = { ...step, status: 'running' as const, startedAt: Date.now() };
       agentWorkflowEngine.updateStep(workflow.id, runningStep);
       agentEventBus.publish('workflow_step_started', { workflowId: workflow.id, step: runningStep });
 
       const execution = await this.executeStep(runningStep, autonomySettings);
       if (execution.success) {
-        agentWorkflowEngine.updateStep(workflow.id, { id: step.id, status: 'completed', finishedAt: Date.now() });
+        agentWorkflowEngine.updateStep(workflow.id, { id: step.id, status: 'completed' as const, finishedAt: Date.now() });
         agentEventBus.publish('workflow_step_completed', { workflowId: workflow.id, stepId: step.id });
         agentContextManager.updateWorkflow(workflow);
         continue;
       }
 
-      const advice = this.reasoning.assessFailure(step, execution.error, autonomySettings);
+      const advice = this.reasoning.assessFailure(step, autonomySettings, execution.error);
       if (advice.shouldRetry && step.status !== 'failed') {
         agentEventBus.publish('workflow_step_retry', { workflowId: workflow.id, stepId: step.id, reason: advice.reason });
         const retryResult = await this.retryStep(workflow, step, autonomySettings, advice);

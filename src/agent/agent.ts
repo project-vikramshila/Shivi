@@ -1,4 +1,4 @@
-import type { AgentGoal, AgentWorkflow, AutonomySettings, WorkflowRunResult } from './core/types';
+import type { AgentGoal, AgentWorkflow, AutonomySettings, WorkflowRunResult, AgentEventType } from './core/types';
 import { agentPlanner } from './planner';
 import { agentContextManager } from './context';
 import { AgentExecutionEngine } from './execution';

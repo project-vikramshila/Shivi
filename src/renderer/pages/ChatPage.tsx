@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import useChatStore from '@store/chatStore';
 import ChatBubble from '@components/chat/ChatBubble';
 import ChatInput from '@components/chat/ChatInput';
 import TypingIndicator from '@components/chat/TypingIndicator';
 import { getPersonalityLabel } from '@/modules/personality/personalityEngine';
 import { processUserMessage } from '@/modules/personality/responseMiddleware';
+import { useShiviAPI } from '@hooks/useShiviAPI';
 
 const ChatPage = () => {
   const messages = useChatStore((state) => state.messages);
@@ -17,6 +18,44 @@ const ChatPage = () => {
   const setPersonalityMode = useChatStore((state) => state.setPersonalityMode);
   const regenerateLastResponse = useChatStore((state) => state.regenerateLastResponse);
   const clearConversation = useChatStore((state) => state.clearConversation);
+
+  const [geminiEnabled, setGeminiEnabled] = useState(false);
+  const { api: shiviAPI, isReady } = useShiviAPI();
+
+  useEffect(() => {
+    const loadGeminiSetting = async () => {
+      if (!isReady || !shiviAPI?.config?.get) {
+        return;
+      }
+      try {
+        const config = await shiviAPI.config.get();
+        setGeminiEnabled(config.aiSettings?.enableGemini ?? false);
+      } catch (error) {
+        console.warn('Failed to load Gemini setting:', error);
+      }
+    };
+    loadGeminiSetting();
+  }, [isReady, shiviAPI]);
+
+  const handleGeminiToggle = async (enabled: boolean) => {
+    setGeminiEnabled(enabled);
+    if (!shiviAPI?.config?.set) {
+      console.warn('Config API not available');
+      return;
+    }
+    try {
+      const currentConfig = await shiviAPI.config.get();
+      await shiviAPI.config.set({
+        ...currentConfig,
+        aiSettings: {
+          ...currentConfig.aiSettings,
+          enableGemini: enabled
+        }
+      });
+    } catch (error) {
+      console.warn('Failed to save Gemini setting:', error);
+    }
+  };
 
   const pinnedMessages = useMemo(() => messages.filter((message) => message.pinned), [messages]);
   const conversationText = messages.map((message) => message.text);
@@ -95,6 +134,24 @@ const ChatPage = () => {
         </div>
 
         <div className="space-y-4">
+          <div className="rounded-3xl border border-white/10 bg-shivi-dark-900 p-5">
+            <p className="text-sm uppercase tracking-[0.3em] text-shivi-pink-200 mb-3">AI Enhancement</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-white">Enable Gemini</p>
+                <p className="text-white/60 text-sm">Better Hindi responses with AI</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={geminiEnabled}
+                  onChange={(e) => handleGeminiToggle(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
           <div className="rounded-3xl border border-white/10 bg-shivi-dark-900 p-5">
             <p className="text-sm uppercase tracking-[0.3em] text-shivi-pink-200 mb-3">Pinned messages</p>
             {pinnedMessages.length === 0 ? (

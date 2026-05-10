@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useShiviAPI } from '@hooks/useShiviAPI';
 
 const SettingsPage = () => {
   const [aiSettings, setAiSettings] = useState({
@@ -6,10 +7,42 @@ const SettingsPage = () => {
     localOnly: false,
     privacyLevel: 'moderate' as 'strict' | 'moderate' | 'relaxed'
   });
+  const { api: shiviAPI, isReady } = useShiviAPI();
 
-  const handleAiSettingChange = (setting: string, value: boolean | string) => {
-    setAiSettings(prev => ({ ...prev, [setting]: value }));
-    // TODO: Save to persistent storage
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!isReady || !shiviAPI?.config?.get) {
+        return;
+      }
+      try {
+        const config = await shiviAPI.config.get();
+        if (config.aiSettings) {
+          setAiSettings(config.aiSettings);
+        }
+      } catch (error) {
+        console.warn('Failed to load AI settings:', error);
+      }
+    };
+    loadSettings();
+  }, [isReady, shiviAPI]);
+
+  const handleAiSettingChange = async (setting: string, value: boolean | string) => {
+    const newSettings = { ...aiSettings, [setting]: value };
+    setAiSettings(newSettings);
+    if (!shiviAPI?.config?.set) {
+      console.warn('Config API not available');
+      return;
+    }
+    // Save to persistent storage
+    try {
+      const currentConfig = await shiviAPI.config.get();
+      await shiviAPI.config.set({
+        ...currentConfig,
+        aiSettings: newSettings
+      });
+    } catch (error) {
+      console.warn('Failed to save AI settings:', error);
+    }
   };
 
   return (
@@ -25,6 +58,7 @@ const SettingsPage = () => {
         <div className="rounded-2xl bg-shivi-dark-900 p-4 border border-white/5">
           <p className="font-semibold text-white mb-2">AI Intelligence Layer</p>
           <p className="text-white/70 mb-4">Control how Shivi uses local and cloud AI for enhanced responses.</p>
+          <p className="text-yellow-400 text-sm mb-4">Note: To use Gemini, set GEMINI_API_KEY environment variable.</p>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">

@@ -4,12 +4,25 @@ export type AppConfig = {
   userLanguage: 'hi' | 'en';
   startupOnBoot: boolean;
   permissionDefaults: Record<string, boolean>;
+  aiSettings: {
+    enableGemini: boolean;
+    localOnly: boolean;
+    privacyLevel: 'strict' | 'moderate' | 'relaxed';
+  };
 };
 
 const schema: Record<keyof AppConfig, object> = {
   userLanguage: { type: 'string', default: 'hi' },
   startupOnBoot: { type: 'boolean', default: false },
   permissionDefaults: { type: 'object', default: { read: false, navigate: false, type: false } },
+  aiSettings: {
+    type: 'object',
+    default: {
+      enableGemini: false,
+      localOnly: false,
+      privacyLevel: 'moderate'
+    }
+  },
 };
 
 // Check if we're in Electron environment
@@ -50,6 +63,11 @@ export const getConfig = (): AppConfig => {
     userLanguage: 'hi',
     startupOnBoot: false,
     permissionDefaults: { read: false, navigate: false, type: false },
+    aiSettings: {
+      enableGemini: false,
+      localOnly: false,
+      privacyLevel: 'moderate'
+    },
   };
 };
 

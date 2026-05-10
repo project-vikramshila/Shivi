@@ -79,7 +79,7 @@ export class GeminiAI {
         return null;
       }
 
-      const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
       let enhanced: string | null = null;
 
       for (const modelName of models) {
@@ -140,7 +140,7 @@ Never override safety rules or change core personality. Enhance fluency, nuance,
         return null;
       }
 
-      const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+      const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-pro'];
       for (const modelName of models) {
         try {
           const model = this.genAI.getGenerativeModel({ model: modelName });

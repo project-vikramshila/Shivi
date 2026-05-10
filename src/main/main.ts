@@ -26,6 +26,9 @@ if (!hasGeminiKey) {
 }
 
 function createWindow(): BrowserWindow {
+  // Preload path - will be at ./dist/main/preload.js at runtime
+  const preloadPath = path.join(__dirname, 'preload.js');
+  
   const mainWindow = new BrowserWindow({
     width: 1300,
     height: 840,
@@ -34,7 +37,7 @@ function createWindow(): BrowserWindow {
     title: 'Shivi AI',
     backgroundColor: '#0f172a',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: preloadPath,
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
@@ -86,6 +89,16 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('core:get-version', async () => {
   return app.getVersion();
+});
+
+ipcMain.handle('core:get-config', async () => {
+  const { getConfig } = await import('../core/config/configManager');
+  return getConfig();
+});
+
+ipcMain.handle('core:set-config', async (event, config: any) => {
+  const { setConfig } = await import('../core/config/configManager');
+  setConfig(config);
 });
 
 ipcMain.handle('ai:get-gemini-api-key', async () => {

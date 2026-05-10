@@ -2,6 +2,8 @@
 export const IPC_CHANNELS = {
   CORE: {
     GET_VERSION: 'core:get-version',
+    GET_CONFIG: 'core:get-config',
+    SET_CONFIG: 'core:set-config',
   },
   AI: {
     GET_GEMINI_KEY: 'ai:get-gemini-api-key',

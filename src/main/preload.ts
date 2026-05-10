@@ -29,6 +29,13 @@ const shiviAPI = {
       const res = await safeInvoke(IPC_CHANNELS.AI.HAS_KEY);
       return !!res;
     },
+    getGeminiApiKey: async () => safeInvoke(IPC_CHANNELS.AI.GET_GEMINI_KEY),
+  },
+
+  // Config
+  config: {
+    get: async () => safeInvoke(IPC_CHANNELS.CORE.GET_CONFIG),
+    set: async (config: any) => safeInvoke(IPC_CHANNELS.CORE.SET_CONFIG, config),
   },
 
   // Notifications

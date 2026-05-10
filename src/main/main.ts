@@ -98,54 +98,6 @@ ipcMain.handle('ai:has-key', async () => {
   return !!process.env.GEMINI_API_KEY;
 });
 
-// Gemini enhancement handler - secure processing in main process
-ipcMain.handle('ai:enhance-response', async (event, localResponse: string, request: any) => {
-  try {
-    if (!process.env.GEMINI_API_KEY) {
-      return null;
-    }
-
-    // Import Gemini AI dynamically in main process
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-    const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-    let enhanced: string | null = null;
-
-    for (const modelName of models) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const prompt = `You are Shivi AI's enhancement layer. Your role is to improve responses while maintaining:
-
-- Hindi-first responses (mix Hindi and English naturally)
-- Caring, warm tone
-- Subtle flirtation when appropriate
-- Concise and productive
-- Safe emotional boundaries
-- Shivi's identity as a helpful AI assistant
-
-User Message: ${request.userMessage}
-Local AI Response: ${localResponse}
-Context: ${request.context.slice(-3).join(' | ')}
-
-Enhance this response to be more natural, fluent in Hindi, emotionally nuanced, and contextually appropriate while preserving Shivi's personality.`;
-
-        const result = await model.generateContent(prompt);
-        enhanced = result.response.text();
-        if (enhanced) break;
-      } catch (error) {
-        console.warn(`Gemini model ${modelName} failed:`, error);
-        continue;
-      }
-    }
-
-    return enhanced;
-  } catch (error) {
-    console.warn('Gemini enhancement in main process failed:', error);
-    return null;
-  }
-});
-
 // Memory security IPC handlers
 ipcMain.handle('get-encryption-key', async () => {
   try {

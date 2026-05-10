@@ -125,7 +125,6 @@ interface ShiviAPI {
   // AI
   ai: {
     isGeminiAvailable: () => Promise<boolean>;
-    enhanceResponse: (localResponse: string, request: any) => Promise<string | null>;
   };
 
   // Notifications

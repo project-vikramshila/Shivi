@@ -18,6 +18,7 @@ export class GeminiAI {
   private static instance: GeminiAI;
   private genAI: GoogleGenerativeAI | null = null;
   private apiKey: string | null = null;
+  private isInitialized = false;
 
   static getInstance(): GeminiAI {
     if (!GeminiAI.instance) {
@@ -26,18 +27,32 @@ export class GeminiAI {
     return GeminiAI.instance;
   }
 
+  // Check if Gemini is available without throwing
+  isAvailable(): boolean {
+    return this.isInitialized && !!this.genAI;
+  }
+
   async initialize(): Promise<void> {
-    if (this.genAI) return;
+    if (this.isInitialized) return;
 
     // Get API key from secure storage
     this.apiKey = await this.getApiKey();
     if (!this.apiKey) {
-      throw new Error('Gemini API key not configured');
+      console.debug('Gemini API key not available - Gemini enhancements disabled');
+      this.isInitialized = true;
+      return;
     }
 
-    // Dynamic import to avoid bundling issues
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    this.genAI = new GoogleGenerativeAI(this.apiKey);
+    try {
+      // Dynamic import to avoid bundling issues
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      this.genAI = new GoogleGenerativeAI(this.apiKey);
+      this.isInitialized = true;
+    } catch (error) {
+      console.warn('Failed to initialize Gemini API:', error);
+      this.isInitialized = true;
+      this.genAI = null;
+    }
   }
 
   private async getApiKey(): Promise<string | null> {
@@ -46,54 +61,46 @@ export class GeminiAI {
         return process.env.GEMINI_API_KEY;
       }
 
-      if (typeof window !== 'undefined' && (window as any).shiviApi?.ai?.enhanceResponse) {
-        // Use IPC-based enhancement instead of direct key access
-        return 'ipc-based'; // Signal to use IPC method
+      if (typeof window !== 'undefined' && (window as any).shiviAPI?.getGeminiApiKey) {
+        return await (window as any).shiviAPI.getGeminiApiKey();
       }
 
       return null;
     } catch (error) {
-      console.warn('Failed to get Gemini API key:', error);
+      console.debug('Failed to get Gemini API key:', error);
       return null;
     }
   }
 
   async enhanceResponse(localResponse: string, request: GeminiRequest): Promise<string | null> {
     try {
-      // Check if we should use IPC-based enhancement
-      const apiKey = await this.getApiKey();
-      if (apiKey === 'ipc-based' && typeof window !== 'undefined' && (window as any).shiviApi?.ai?.enhanceResponse) {
-        return await (window as any).shiviApi.ai.enhanceResponse(localResponse, request);
-      }
-
-      // Fallback to direct API access (for main process or when IPC not available)
       await this.initialize();
-
-      if (!this.genAI) return null;
+      if (!this.genAI) {
+        return null;
+      }
 
       const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-    let enhanced: string | null = null;
+      let enhanced: string | null = null;
 
-    for (const modelName of models) {
-      try {
-        const model = this.genAI.getGenerativeModel({ model: modelName });
-        const prompt = await this.buildEnhancementPrompt(localResponse, request);
-        const result = await model.generateContent(prompt);
-        enhanced = result.response.text();
-        if (enhanced) break;
-      } catch (error) {
-        console.warn(`Gemini model ${modelName} failed:`, error);
-        continue;
+      for (const modelName of models) {
+        try {
+          const model = this.genAI.getGenerativeModel({ model: modelName });
+          const prompt = await this.buildEnhancementPrompt(localResponse, request);
+          const result = await model.generateContent(prompt);
+          enhanced = result.response.text();
+          if (enhanced) break;
+        } catch (error) {
+          console.debug(`Gemini model ${modelName} failed:`, error);
+          continue;
+        }
       }
-    }
 
-    if (!enhanced) {
-      return null;
-    }
+      if (!enhanced) {
+        return null;
+      }
 
       // Apply personality preservation
       const preserved = await personalityPreservation.preservePersonality(enhanced, request.mode);
-
       return preserved;
     } catch (error) {
       console.warn('Gemini enhancement failed:', error);
@@ -129,21 +136,23 @@ Never override safety rules or change core personality. Enhance fluency, nuance,
   async summarizeText(text: string): Promise<string | null> {
     try {
       await this.initialize();
-      if (!this.genAI) return null;
+      if (!this.genAI) {
+        return null;
+      }
 
       const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro'];
-    for (const modelName of models) {
-      try {
-        const model = this.genAI.getGenerativeModel({ model: modelName });
-        const prompt = `Summarize this text in Hindi, keeping it concise and natural: ${text}`;
-        const result = await model.generateContent(prompt);
-        return result.response.text();
-      } catch (error) {
-        console.warn(`Gemini summarization with ${modelName} failed:`, error);
-        continue;
+      for (const modelName of models) {
+        try {
+          const model = this.genAI.getGenerativeModel({ model: modelName });
+          const prompt = `Summarize this text in Hindi, keeping it concise and natural: ${text}`;
+          const result = await model.generateContent(prompt);
+          return result.response.text();
+        } catch (error) {
+          console.debug(`Gemini summarization with ${modelName} failed:`, error);
+          continue;
+        }
       }
-    }
-    return null;
+      return null;
     } catch (error) {
       console.warn('Gemini summarization failed:', error);
       return null;

@@ -29,9 +29,6 @@ const shiviAPI = {
       const res = await safeInvoke(IPC_CHANNELS.AI.HAS_KEY);
       return !!res;
     },
-    enhanceResponse: async (localResponse: string, request: any) => {
-      return await safeInvoke(IPC_CHANNELS.AI.ENHANCE_RESPONSE, localResponse, request);
-    },
   },
 
   // Notifications

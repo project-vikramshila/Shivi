@@ -76,10 +76,7 @@ export interface ShiviAPI {
   getSyncStatus(): Promise<any>;
 
   // AI
-  ai: {
-    isGeminiAvailable(): Promise<boolean>;
-    enhanceResponse(localResponse: string, request: any): Promise<string | null>;
-  };
+  getGeminiApiKey(): Promise<string | null>;
 
   // Notifications
   showNotification(opts: NotificationOptions): Promise<{ success: boolean }>;
